@@ -6,8 +6,10 @@
 //
 
 import UIKit
+import CoreLocation
 class LocationRequestController: UIViewController {
     // MARK: - Properties
+    var locationmanager: CLLocationManager?
     private let imageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
@@ -29,7 +31,7 @@ class LocationRequestController: UIViewController {
         button.setTitle("Enable Location", for: .normal)
         button.setTitleColor(UIColor.white, for: .normal)
         button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
-        button.backgroundColor = .systemBlue
+        button.backgroundColor = .mainBlue
         button.layer.cornerRadius = 5
         button.addTarget(self, action: #selector(handleRequestLocation), for: .touchUpInside)
         return button
@@ -39,6 +41,7 @@ class LocationRequestController: UIViewController {
         super.viewDidLoad()
         style()
         layout()
+        
     }
 }
 // MARK: - Helpers
@@ -81,5 +84,14 @@ extension LocationRequestController{
 // MARK: - Selectors
 extension LocationRequestController{
     @objc func handleRequestLocation(_ sender: UIButton){
+        guard let locationManager = self.locationmanager else{ return }
+        locationManager.delegate = self
+        locationManager.requestWhenInUseAuthorization()
+    }
+}
+extension LocationRequestController: CLLocationManagerDelegate{
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        guard locationmanager?.location != nil else { return }
+        dismiss(animated: true)
     }
 }

@@ -18,6 +18,10 @@ class MapController: UIViewController {
         style()
         layout()
     }
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        centerMapOnUserLocation()
+    }
 }
 // MARK: - Helpers
 extension MapController{
@@ -38,6 +42,11 @@ extension MapController{
             view.bottomAnchor.constraint(equalTo: mapView.bottomAnchor)
         ])
     }
+    private func centerMapOnUserLocation(){
+        guard let coordinate = locationManager.location?.coordinate else { return }
+        let coordinateRegion = MKCoordinateRegion(center: coordinate, latitudinalMeters: 2000, longitudinalMeters: 2000)
+        mapView.setRegion(coordinateRegion, animated: true)
+    }
 }
 extension MapController: CLLocationManagerDelegate{
     func enableLocationService(){
@@ -48,6 +57,7 @@ extension MapController: CLLocationManagerDelegate{
             print("notDetermined")
             DispatchQueue.main.async {
                 let controller = LocationRequestController()
+                controller.locationmanager = self.locationManager
                 controller.modalPresentationStyle = .fullScreen
                 self.present(controller, animated: true)
             }
