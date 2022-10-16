@@ -9,6 +9,7 @@ import UIKit
 private let reuseIdentifier = "SearchCell"
 protocol SearchInputViewDelegate: AnyObject {
     func animateCenterMapButton(expansionState: SearchInputView.ExpansionState,hideButton: Bool)
+    func handleSearch(withSearchText searchtext: String)
 }
 class SearchInputView: UIView {
     // MARK: - Properties
@@ -102,6 +103,14 @@ extension SearchInputView{
             self.frame.origin.y = targetPosition
         }, completion: completion)
     }
+    private func dismissOnSearch(){
+        searchBar.showsCancelButton = false
+        searchBar.endEditing(true)
+        animateInputView(targetPosition: self.frame.origin.y + 450) { _ in
+            self.delegate?.animateCenterMapButton(expansionState: self.expansionState, hideButton: false)
+            self.expansionState = .PartiallyExpanded
+        }
+    }
 }
 
 // MARK: - UITableViewDelegate/DataSource
@@ -168,11 +177,11 @@ extension SearchInputView: UISearchBarDelegate{
         searchBar.showsCancelButton = true
     }
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
-        searchBar.showsCancelButton = false
-        searchBar.endEditing(true)
-        animateInputView(targetPosition: self.frame.origin.y + 450) { _ in
-            self.delegate?.animateCenterMapButton(expansionState: self.expansionState, hideButton: false)
-            self.expansionState = .PartiallyExpanded
-        }
+        dismissOnSearch()
+    }
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        guard let searchtext = searchBar.text else{ return }
+        delegate?.handleSearch(withSearchText: searchtext)
+        dismissOnSearch()
     }
 }
