@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C429730928FBD35C004E1305 /* LocationRequestController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C429730828FBD35C004E1305 /* LocationRequestController.swift */; };
 		C4A6C10B28FBC61400F2445F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4A6C10A28FBC61400F2445F /* AppDelegate.swift */; };
 		C4A6C11428FBC61700F2445F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C4A6C11328FBC61700F2445F /* Assets.xcassets */; };
 		C4A6C11728FBC61700F2445F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C4A6C11528FBC61700F2445F /* LaunchScreen.storyboard */; };
@@ -14,6 +15,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		C429730828FBD35C004E1305 /* LocationRequestController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationRequestController.swift; sourceTree = "<group>"; };
 		C4A6C10728FBC61400F2445F /* MyMap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyMap.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C4A6C10A28FBC61400F2445F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		C4A6C11328FBC61700F2445F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -33,6 +35,26 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		C429730528FBCD53004E1305 /* Files */ = {
+			isa = PBXGroup;
+			children = (
+				C4A6C10A28FBC61400F2445F /* AppDelegate.swift */,
+				C4A6C11328FBC61700F2445F /* Assets.xcassets */,
+				C4A6C11528FBC61700F2445F /* LaunchScreen.storyboard */,
+				C4A6C11828FBC61700F2445F /* Info.plist */,
+			);
+			name = Files;
+			sourceTree = "<group>";
+		};
+		C429730728FBCD6D004E1305 /* Controller */ = {
+			isa = PBXGroup;
+			children = (
+				C4A6C11E28FBC6A100F2445F /* MapController.swift */,
+				C429730828FBD35C004E1305 /* LocationRequestController.swift */,
+			);
+			path = Controller;
+			sourceTree = "<group>";
+		};
 		C4A6C0FE28FBC61300F2445F = {
 			isa = PBXGroup;
 			children = (
@@ -52,11 +74,8 @@
 		C4A6C10928FBC61400F2445F /* MyMap */ = {
 			isa = PBXGroup;
 			children = (
-				C4A6C10A28FBC61400F2445F /* AppDelegate.swift */,
-				C4A6C11328FBC61700F2445F /* Assets.xcassets */,
-				C4A6C11528FBC61700F2445F /* LaunchScreen.storyboard */,
-				C4A6C11828FBC61700F2445F /* Info.plist */,
-				C4A6C11E28FBC6A100F2445F /* MapController.swift */,
+				C429730728FBCD6D004E1305 /* Controller */,
+				C429730528FBCD53004E1305 /* Files */,
 			);
 			path = MyMap;
 			sourceTree = "<group>";
@@ -133,6 +152,7 @@
 			files = (
 				C4A6C11F28FBC6A100F2445F /* MapController.swift in Sources */,
 				C4A6C10B28FBC61400F2445F /* AppDelegate.swift in Sources */,
+				C429730928FBD35C004E1305 /* LocationRequestController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
