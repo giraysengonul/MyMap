@@ -12,6 +12,14 @@ class MapController: UIViewController {
     // MARK: - Properties
     var mapView: MKMapView!
     var locationManager: CLLocationManager!
+    var searchInputView: SearchInputView!
+    private lazy var centerMapButton: UIButton = {
+        let button = UIButton(type: .system)
+        let image = #imageLiteral(resourceName: "location-arrow-flat")
+        button.setImage(image.withRenderingMode(.alwaysOriginal), for: .normal)
+        button.addTarget(self, action: #selector(handleCenterLocation), for: .touchUpInside)
+        return button
+    }()
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -27,19 +35,44 @@ class MapController: UIViewController {
 extension MapController{
     private func style(){
         view.backgroundColor = .white
+        //mapView style
         mapView = MKMapView()
         mapView.showsUserLocation = true
         mapView.userTrackingMode = .follow
         mapView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(mapView)
         enableLocationService()
+        //searchInputView style
+        searchInputView = SearchInputView()
+        searchInputView.delegate = self
+        searchInputView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(searchInputView)
+        //centerMapButton style
+        centerMapButton.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(centerMapButton)
     }
     private func layout(){
+        //mapView layout
         NSLayoutConstraint.activate([
             mapView.topAnchor.constraint(equalTo: view.topAnchor),
             mapView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             view.trailingAnchor.constraint(equalTo: mapView.trailingAnchor),
             view.bottomAnchor.constraint(equalTo: mapView.bottomAnchor)
+        ])
+        //searchInputView layout
+        NSLayoutConstraint.activate([
+            searchInputView.heightAnchor.constraint(equalToConstant: view.frame.height),
+            view.bottomAnchor.constraint(equalTo: searchInputView.bottomAnchor, constant: -(view.frame.height - 88)),
+            searchInputView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            view.trailingAnchor.constraint(equalTo: searchInputView.trailingAnchor)
+        ])
+        //centerMapButton layout
+        NSLayoutConstraint.activate([
+            centerMapButton.widthAnchor.constraint(equalToConstant: 50),
+            centerMapButton.heightAnchor.constraint(equalToConstant: 50),
+            searchInputView.topAnchor.constraint(equalTo: centerMapButton.bottomAnchor, constant: 16),
+            view.trailingAnchor.constraint(equalTo: centerMapButton.trailingAnchor, constant: 16)
+            
         ])
     }
     private func centerMapOnUserLocation(){
@@ -48,6 +81,41 @@ extension MapController{
         mapView.setRegion(coordinateRegion, animated: true)
     }
 }
+// MARK: - SearchInputViewDelegate
+extension MapController: SearchInputViewDelegate{
+    func animateCenterMapButton(expansionState: SearchInputView.ExpansionState, hideButton: Bool) {
+        switch expansionState{
+        case .NotExpanded:
+            UIView.animate(withDuration: 0.25) {
+                self.centerMapButton.frame.origin.y -= 270
+            }
+            if hideButton{
+                self.centerMapButton.alpha = 0
+            }else{
+                self.centerMapButton.alpha = 1
+            }
+        case .PartiallyExpanded:
+            if hideButton{
+                self.centerMapButton.alpha = 0
+            }else{
+                UIView.animate(withDuration: 0.25) {
+                    self.centerMapButton.frame.origin.y += 260
+                }
+            }
+        case .FullyExpanded:
+            UIView.animate(withDuration: 0.25) {
+                self.centerMapButton.alpha = 1
+            }
+        }
+    }
+}
+// MARK: - Selectors
+extension MapController{
+    @objc func handleCenterLocation(_ sender: UIButton){
+        centerMapOnUserLocation()
+    }
+}
+// MARK: - CLLocationManagerDelegate
 extension MapController: CLLocationManagerDelegate{
     func enableLocationService(){
         locationManager = CLLocationManager()
