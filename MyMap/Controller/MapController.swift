@@ -45,6 +45,7 @@ extension MapController{
         //searchInputView style
         searchInputView = SearchInputView()
         searchInputView.delegate = self
+        searchInputView.mapController = self
         searchInputView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(searchInputView)
         //centerMapButton style
@@ -113,6 +114,8 @@ extension MapController{
                 annotation.coordinate = mapItem.placemark.coordinate
                 self.mapView.addAnnotation(annotation)
             })
+            
+            self.searchInputView.searchResults = response?.mapItems
         }
     }
 }
@@ -179,5 +182,12 @@ extension MapController: CLLocationManagerDelegate{
         @unknown default:
             print("notDetermined")
         }
+    }
+}
+// MARK: - SearchCellDelegate
+extension MapController: SearchCellDelegate{
+    func distanceFromUser(location: CLLocation) -> CLLocationDistance? {
+        guard let userLocation = locationManager.location else { return nil }
+        return userLocation.distance(from: location)
     }
 }

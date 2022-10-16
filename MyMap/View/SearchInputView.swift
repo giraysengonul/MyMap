@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import MapKit
 private let reuseIdentifier = "SearchCell"
 protocol SearchInputViewDelegate: AnyObject {
     func animateCenterMapButton(expansionState: SearchInputView.ExpansionState,hideButton: Bool)
@@ -14,6 +15,18 @@ protocol SearchInputViewDelegate: AnyObject {
 class SearchInputView: UIView {
     // MARK: - Properties
     weak var delegate: SearchInputViewDelegate?
+    var mapController: MapController?
+    var searchBar: UISearchBar!
+    var tableView: UITableView!
+    var expansionState: ExpansionState!
+    var searchResults: [MKMapItem]? {
+        didSet{ tableView.reloadData() }
+    }
+    enum ExpansionState {
+        case NotExpanded
+        case PartiallyExpanded
+        case FullyExpanded
+    }
     private let indicatorView: UIView = {
         let view = UIView()
         view.backgroundColor = .lightGray
@@ -21,14 +34,7 @@ class SearchInputView: UIView {
         view.alpha = 0.8
         return view
     }()
-    var searchBar: UISearchBar!
-    var tableView: UITableView!
-    var expansionState: ExpansionState!
-    enum ExpansionState {
-        case NotExpanded
-        case PartiallyExpanded
-        case FullyExpanded
-    }
+    
     // MARK: - Lifecycle
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -116,10 +122,17 @@ extension SearchInputView{
 // MARK: - UITableViewDelegate/DataSource
 extension SearchInputView: UITableViewDelegate, UITableViewDataSource{
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 3
+        guard let searchResults = searchResults else{ return 0}
+        return searchResults.count
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath) as! SearchCell
+        if let controller = mapController{
+            cell.delegate = controller
+        }
+        if let searchResults = searchResults {
+            cell.mapItem = searchResults[indexPath.row]
+        }
         return cell
     }
 }
