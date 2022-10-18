@@ -135,6 +135,25 @@ extension SearchInputView: UITableViewDelegate, UITableViewDataSource{
         }
         return cell
     }
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard var searchResults = searchResults else{ return }
+        let selsectedMapItem = searchResults[indexPath.row]
+        // FIXME: Refactor
+        if expansionState == .FullyExpanded {
+            self.searchBar.showsCancelButton = false
+            self.searchBar.endEditing(true)
+            animateInputView(targetPosition: self.frame.origin.y + 450) { _ in
+                self.delegate?.animateCenterMapButton(expansionState: self.expansionState,hideButton: false)
+                self.expansionState = .PartiallyExpanded
+            }
+        }
+        searchResults.remove(at: indexPath.row)
+        searchResults.insert(selsectedMapItem, at: 0)
+        self.searchResults = searchResults
+        let firstIndexPath = IndexPath(row: 0, section: 0)
+        let cell = tableView.cellForRow(at: firstIndexPath) as! SearchCell
+        cell.animateButton()
+    }
 }
 // MARK: - Selectors
 extension SearchInputView{

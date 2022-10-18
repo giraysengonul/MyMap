@@ -17,6 +17,17 @@ class SearchCell: UITableViewCell {
     }
     weak var delegate: SearchCellDelegate?
     private let dimension: CGFloat = 32
+    private lazy var directionsButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 18)
+        button.setTitle("Go", for: .normal)
+        button.setTitleColor(UIColor.white, for: .normal)
+        button.backgroundColor = .directionsGreen
+        button.layer.cornerRadius = 5
+        button.alpha = 0
+        button.addTarget(self, action: #selector(handleGetDirections), for: .touchUpInside)
+        return button
+    }()
     private lazy var imageContainerView: UIView = {
         let view = UIView()
         view.backgroundColor = .mainPink
@@ -60,6 +71,12 @@ class SearchCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 }
+// MARK: - Selectors
+extension SearchCell{
+    @objc func handleGetDirections(_ sender: UIButton){
+        
+    }
+}
 // MARK: - Helpers
 extension SearchCell{
     private func setup(){
@@ -74,6 +91,9 @@ extension SearchCell{
         //locationDistanceLabel setup
         locationDistanceLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(locationDistanceLabel)
+        //directionsButton setup
+        directionsButton.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(directionsButton)
     }
     private func layout(){
         //imageContainerView layout
@@ -93,6 +113,14 @@ extension SearchCell{
             locationDistanceLabel.leadingAnchor.constraint(equalTo: imageContainerView.trailingAnchor, constant: 8),
             imageContainerView.bottomAnchor.constraint(equalTo: locationDistanceLabel.bottomAnchor,constant: -4)
         ])
+        //directionsButton layout
+        let buttonDimension: CGFloat = 50
+        NSLayoutConstraint.activate([
+            directionsButton.centerYAnchor.constraint(equalTo: centerYAnchor),
+            directionsButton.heightAnchor.constraint(equalToConstant: buttonDimension),
+            directionsButton.widthAnchor.constraint(equalToConstant: buttonDimension),
+            trailingAnchor.constraint(equalTo: directionsButton.trailingAnchor, constant: 8)
+        ])
     }
     private func configureCell(){
         locationTitleLabel.text = mapItem?.name
@@ -102,5 +130,15 @@ extension SearchCell{
         guard let distanceFromUser = delegate?.distanceFromUser(location: mapItemLocation) else { return }
         let distanceString = distanceFormatter.string(fromDistance: distanceFromUser)
         locationDistanceLabel.text = distanceString
+    }
+    func animateButton(){
+        directionsButton.transform = CGAffineTransform(scaleX: 0.25, y: 0.25)
+        UIView.animate(withDuration: 1, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: .curveEaseInOut) {
+            self.directionsButton.alpha = 1
+            self.locationDistanceLabel.transform = CGAffineTransform(scaleX: 1.2, y: 1.2)
+        } completion: { _ in
+            self.directionsButton.transform = .identity
+        }
+        
     }
 }
