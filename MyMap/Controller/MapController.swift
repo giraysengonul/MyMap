@@ -78,6 +78,30 @@ extension MapController{
             
         ])
     }
+    private func zoomToFit(selectedAnnotation: MKAnnotation?){
+        if mapView.annotations.count == 0{ return }
+        var topLeftCoordinate = CLLocationCoordinate2D(latitude: -90, longitude: 180)
+        var bottomRightCoordinate = CLLocationCoordinate2D(latitude: 90, longitude: -180)
+        if let selectedAnnotation = selectedAnnotation{
+            for annotation in mapView.annotations{
+                if let userAnno = annotation as? MKUserLocation{
+                    topLeftCoordinate.longitude = fmin(topLeftCoordinate.longitude, userAnno.coordinate.longitude)
+                    topLeftCoordinate.latitude = fmax(topLeftCoordinate.latitude, userAnno.coordinate.latitude)
+                    bottomRightCoordinate.longitude = fmax(bottomRightCoordinate.longitude, userAnno.coordinate.longitude)
+                    bottomRightCoordinate.latitude = fmin(bottomRightCoordinate.latitude, userAnno.coordinate.latitude)
+                }
+                if annotation.title == selectedAnnotation.title{
+                    topLeftCoordinate.longitude = fmin(topLeftCoordinate.longitude, annotation.coordinate.longitude)
+                    topLeftCoordinate.latitude = fmax(topLeftCoordinate.latitude, annotation.coordinate.latitude)
+                    bottomRightCoordinate.longitude = fmax(bottomRightCoordinate.longitude, annotation.coordinate.longitude)
+                    bottomRightCoordinate.latitude = fmin(bottomRightCoordinate.latitude, annotation.coordinate.latitude)
+                }
+            }
+            var region = MKCoordinateRegion(center: CLLocationCoordinate2DMake(topLeftCoordinate.latitude - (topLeftCoordinate.latitude - bottomRightCoordinate.latitude) * 0.65, topLeftCoordinate.longitude + (bottomRightCoordinate.longitude - topLeftCoordinate.longitude) * 0.65), span: MKCoordinateSpan(latitudeDelta: fabs(topLeftCoordinate.latitude - bottomRightCoordinate.latitude) * 3.0, longitudeDelta: fabs(bottomRightCoordinate.longitude - topLeftCoordinate.longitude) * 3.0))
+            region = mapView.regionThatFits(region)
+            mapView.setRegion(region, animated: true)
+        }
+    }
     private func generatePolyline(forDestinationMapItem destinationMapItem: MKMapItem){
         let request = MKDirections.Request()
         request.source = MKMapItem.forCurrentLocation()
@@ -153,6 +177,7 @@ extension MapController: SearchInputViewDelegate{
         mapView.annotations.forEach { annotation in
             if annotation.title == mapItem.name{
                 self.mapView.selectAnnotation(annotation, animated: true)
+                self.zoomToFit(selectedAnnotation: annotation)
             }
         }
     }
