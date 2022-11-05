@@ -76,6 +76,19 @@ extension MapController{
             
         ])
     }
+    private func generatePolyline(forDestinationMapItem destinationMapItem: MKMapItem){
+        let request = MKDirections.Request()
+        request.source = MKMapItem.forCurrentLocation()
+        request.destination = destinationMapItem
+        request.transportType = .walking
+        
+        let directions = MKDirections(request: request)
+        directions.calculate { response, error in
+            guard let response = response else{ return }
+            let route = response.routes[0]
+            
+        }
+    }
     private func centerMapOnUserLocation(shouldLoadAnnotations: Bool){
         guard let coordinate = locationManager.location?.coordinate else { return }
         let coordinateRegion = MKCoordinateRegion(center: coordinate, latitudinalMeters: 2000, longitudinalMeters: 2000)
@@ -186,6 +199,10 @@ extension MapController: CLLocationManagerDelegate{
 }
 // MARK: - SearchCellDelegate
 extension MapController: SearchCellDelegate{
+    func getDirections(forMapItem mapItem: MKMapItem) {
+        mapItem.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeWalking])
+    }
+    
     func distanceFromUser(location: CLLocation) -> CLLocationDistance? {
         guard let userLocation = locationManager.location else { return nil }
         return userLocation.distance(from: location)

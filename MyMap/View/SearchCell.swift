@@ -9,6 +9,7 @@ import UIKit
 import MapKit
 protocol SearchCellDelegate: AnyObject {
     func distanceFromUser(location: CLLocation)-> CLLocationDistance?
+    func getDirections(forMapItem mapItem: MKMapItem)
 }
 class SearchCell: UITableViewCell {
     // MARK: - Properties
@@ -23,9 +24,9 @@ class SearchCell: UITableViewCell {
         button.setTitle("Go", for: .normal)
         button.setTitleColor(UIColor.white, for: .normal)
         button.backgroundColor = .directionsGreen
+        button.addTarget(self, action: #selector(handleGetDirections), for: .touchUpInside)
         button.layer.cornerRadius = 5
         button.alpha = 0
-        button.addTarget(self, action: #selector(handleGetDirections), for: .touchUpInside)
         return button
     }()
     private lazy var imageContainerView: UIView = {
@@ -74,12 +75,14 @@ class SearchCell: UITableViewCell {
 // MARK: - Selectors
 extension SearchCell{
     @objc func handleGetDirections(_ sender: UIButton){
-        
+        print("button")
+        guard let mapItem = mapItem else { return }
+        delegate?.getDirections(forMapItem: mapItem)
     }
 }
 // MARK: - Helpers
 extension SearchCell{
-    private func setup(){
+    func setup(){
         selectionStyle = .none
         //imageContainerView setup
         imageContainerView.translatesAutoresizingMaskIntoConstraints = false
@@ -95,7 +98,7 @@ extension SearchCell{
         directionsButton.translatesAutoresizingMaskIntoConstraints = false
         addSubview(directionsButton)
     }
-    private func layout(){
+    func layout(){
         //imageContainerView layout
         NSLayoutConstraint.activate([
             imageContainerView.heightAnchor.constraint(equalToConstant: dimension),
@@ -114,11 +117,10 @@ extension SearchCell{
             imageContainerView.bottomAnchor.constraint(equalTo: locationDistanceLabel.bottomAnchor,constant: -4)
         ])
         //directionsButton layout
-        let buttonDimension: CGFloat = 50
         NSLayoutConstraint.activate([
+            directionsButton.heightAnchor.constraint(equalToConstant: 50),
+            directionsButton.widthAnchor.constraint(equalToConstant: 50),
             directionsButton.centerYAnchor.constraint(equalTo: centerYAnchor),
-            directionsButton.heightAnchor.constraint(equalToConstant: buttonDimension),
-            directionsButton.widthAnchor.constraint(equalToConstant: buttonDimension),
             trailingAnchor.constraint(equalTo: directionsButton.trailingAnchor, constant: 8)
         ])
     }

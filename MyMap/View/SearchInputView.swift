@@ -147,12 +147,16 @@ extension SearchInputView: UITableViewDelegate, UITableViewDataSource{
                 self.expansionState = .PartiallyExpanded
             }
         }
+        print(indexPath.row)
         searchResults.remove(at: indexPath.row)
         searchResults.insert(selsectedMapItem, at: 0)
         self.searchResults = searchResults
         let firstIndexPath = IndexPath(row: 0, section: 0)
         let cell = tableView.cellForRow(at: firstIndexPath) as! SearchCell
         cell.animateButton()
+        cell.setup()
+        cell.layout()
+        
     }
 }
 // MARK: - Selectors
