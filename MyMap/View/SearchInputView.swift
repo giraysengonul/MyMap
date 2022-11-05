@@ -11,6 +11,8 @@ private let reuseIdentifier = "SearchCell"
 protocol SearchInputViewDelegate: AnyObject {
     func animateCenterMapButton(expansionState: SearchInputView.ExpansionState,hideButton: Bool)
     func handleSearch(withSearchText searchtext: String)
+    func addPolyLine(forDestinationMapItem destinationMapItem: MKMapItem)
+    func selectedAnnotation(withMapItem mapItem: MKMapItem)
 }
 class SearchInputView: UIView {
     // MARK: - Properties
@@ -112,7 +114,7 @@ extension SearchInputView{
     private func dismissOnSearch(){
         searchBar.showsCancelButton = false
         searchBar.endEditing(true)
-        animateInputView(targetPosition: self.frame.origin.y + 450) { _ in
+        animateInputView(targetPosition: self.frame.origin.y + 400) { _ in
             self.delegate?.animateCenterMapButton(expansionState: self.expansionState, hideButton: false)
             self.expansionState = .PartiallyExpanded
         }
@@ -137,7 +139,8 @@ extension SearchInputView: UITableViewDelegate, UITableViewDataSource{
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard var searchResults = searchResults else{ return }
-        let selsectedMapItem = searchResults[indexPath.row]
+        let selectedMapItem = searchResults[indexPath.row]
+        delegate?.selectedAnnotation(withMapItem: selectedMapItem)
         // FIXME: Refactor
         if expansionState == .FullyExpanded {
             self.searchBar.showsCancelButton = false
@@ -149,14 +152,14 @@ extension SearchInputView: UITableViewDelegate, UITableViewDataSource{
         }
         print(indexPath.row)
         searchResults.remove(at: indexPath.row)
-        searchResults.insert(selsectedMapItem, at: 0)
+        searchResults.insert(selectedMapItem, at: 0)
         self.searchResults = searchResults
         let firstIndexPath = IndexPath(row: 0, section: 0)
         let cell = tableView.cellForRow(at: firstIndexPath) as! SearchCell
+        delegate?.addPolyLine(forDestinationMapItem: selectedMapItem)
         cell.animateButton()
         cell.setup()
         cell.layout()
-        
     }
 }
 // MARK: - Selectors
@@ -200,7 +203,7 @@ extension SearchInputView: UISearchBarDelegate{
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
         if expansionState == .NotExpanded{
             self.delegate?.animateCenterMapButton(expansionState: self.expansionState, hideButton: true)
-            animateInputView(targetPosition: self.frame.origin.y - 750) { _ in
+            animateInputView(targetPosition: self.frame.origin.y - 650) { _ in
                 self.expansionState = .FullyExpanded
             }
         }

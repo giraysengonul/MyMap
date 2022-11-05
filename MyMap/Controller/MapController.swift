@@ -13,6 +13,7 @@ class MapController: UIViewController {
     var mapView: MKMapView!
     var locationManager: CLLocationManager!
     var searchInputView: SearchInputView!
+    var route: MKRoute?
     private lazy var centerMapButton: UIButton = {
         let button = UIButton(type: .system)
         let image = #imageLiteral(resourceName: "location-arrow-flat")
@@ -39,6 +40,7 @@ extension MapController{
         mapView = MKMapView()
         mapView.showsUserLocation = true
         mapView.userTrackingMode = .follow
+        mapView.delegate = self
         mapView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(mapView)
         enableLocationService()
@@ -81,12 +83,12 @@ extension MapController{
         request.source = MKMapItem.forCurrentLocation()
         request.destination = destinationMapItem
         request.transportType = .walking
-        
         let directions = MKDirections(request: request)
         directions.calculate { response, error in
             guard let response = response else{ return }
-            let route = response.routes[0]
-            
+            self.route = response.routes[0]
+            guard let polyline = self.route?.polyline else{ return }
+            self.mapView.addOverlay(polyline)
         }
     }
     private func centerMapOnUserLocation(shouldLoadAnnotations: Bool){
@@ -132,8 +134,31 @@ extension MapController{
         }
     }
 }
+// MARK: - MKMapViewDelegate
+extension MapController: MKMapViewDelegate{
+    func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+        if let route = self.route{
+            let polyline = route.polyline
+            let lineRenderer = MKPolylineRenderer(overlay: polyline)
+            lineRenderer.strokeColor = .mainBlue
+            lineRenderer.lineWidth = 3
+            return lineRenderer
+        }
+        return MKOverlayRenderer()
+    }
+}
 // MARK: - SearchInputViewDelegate
 extension MapController: SearchInputViewDelegate{
+    func selectedAnnotation(withMapItem mapItem: MKMapItem) {
+        mapView.annotations.forEach { annotation in
+            if annotation.title == mapItem.name{
+                self.mapView.selectAnnotation(annotation, animated: true)
+            }
+        }
+    }
+    func addPolyLine(forDestinationMapItem destinationMapItem: MKMapItem) {
+        generatePolyline(forDestinationMapItem: destinationMapItem)
+    }
     func handleSearch(withSearchText searchtext: String) {
         removeAnnotations()
         loadAnnotations(withSearchQuery : searchtext)
@@ -142,7 +167,7 @@ extension MapController: SearchInputViewDelegate{
         switch expansionState{
         case .NotExpanded:
             UIView.animate(withDuration: 0.25) {
-                self.centerMapButton.frame.origin.y -= 270
+                self.centerMapButton.frame.origin.y -= 250
             }
             if hideButton{
                 self.centerMapButton.alpha = 0

@@ -75,7 +75,6 @@ class SearchCell: UITableViewCell {
 // MARK: - Selectors
 extension SearchCell{
     @objc func handleGetDirections(_ sender: UIButton){
-        print("button")
         guard let mapItem = mapItem else { return }
         delegate?.getDirections(forMapItem: mapItem)
     }
