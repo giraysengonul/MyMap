@@ -21,6 +21,7 @@ class SearchInputView: UIView {
     var searchBar: UISearchBar!
     var tableView: UITableView!
     var expansionState: ExpansionState!
+    var directionsEnabled = false
     var searchResults: [MKMapItem]? {
         didSet{ tableView.reloadData() }
     }
@@ -119,6 +120,11 @@ extension SearchInputView{
             self.expansionState = .PartiallyExpanded
         }
     }
+    func disableViewInteraction(directionsEnabled: Bool){
+        self.directionsEnabled = directionsEnabled
+        tableView.allowsSelection = directionsEnabled ? false : true
+        searchBar.isUserInteractionEnabled = directionsEnabled ? false : true
+    }
 }
 
 // MARK: - UITableViewDelegate/DataSource
@@ -145,15 +151,20 @@ extension SearchInputView: UITableViewDelegate, UITableViewDataSource{
         if expansionState == .FullyExpanded {
             self.searchBar.showsCancelButton = false
             self.searchBar.endEditing(true)
-            animateInputView(targetPosition: self.frame.origin.y + 450) { _ in
-                self.delegate?.animateCenterMapButton(expansionState: self.expansionState,hideButton: false)
+            animateInputView(targetPosition: self.frame.origin.y + 400) { _ in
+                self.delegate?.animateCenterMapButton(expansionState: self.expansionState,hideButton: true)
                 self.expansionState = .PartiallyExpanded
             }
         }
-        print(indexPath.row)
+        let firstIndexPathh = IndexPath(row: 0, section: 0)
+        let cellFirst = tableView.cellForRow(at: firstIndexPathh) as! SearchCell
+        cellFirst.directionsButtonAlpha(false)
+        cellFirst.setup()
+        cellFirst.layout()
         searchResults.remove(at: indexPath.row)
         searchResults.insert(selectedMapItem, at: 0)
         self.searchResults = searchResults
+        tableView.reloadData()
         let firstIndexPath = IndexPath(row: 0, section: 0)
         let cell = tableView.cellForRow(at: firstIndexPath) as! SearchCell
         delegate?.addPolyLine(forDestinationMapItem: selectedMapItem)
@@ -165,6 +176,7 @@ extension SearchInputView: UITableViewDelegate, UITableViewDataSource{
 // MARK: - Selectors
 extension SearchInputView{
     @objc func handleSwipeGesture(_ sender: UISwipeGestureRecognizer){
+        if directionsEnabled{ return }
         if sender.direction == .up {
             
             if expansionState == .NotExpanded {

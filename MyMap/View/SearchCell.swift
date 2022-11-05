@@ -97,6 +97,9 @@ extension SearchCell{
         directionsButton.translatesAutoresizingMaskIntoConstraints = false
         addSubview(directionsButton)
     }
+    func directionsButtonAlpha(_ alpha: Bool){
+        directionsButton.alpha = alpha ? 1 : 0
+    }
     func layout(){
         //imageContainerView layout
         NSLayoutConstraint.activate([

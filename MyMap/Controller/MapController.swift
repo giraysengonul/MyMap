@@ -13,12 +13,22 @@ class MapController: UIViewController {
     var mapView: MKMapView!
     var locationManager: CLLocationManager!
     var searchInputView: SearchInputView!
+    var selectedAnnotation: MKAnnotation?
     var route: MKRoute?
     private lazy var centerMapButton: UIButton = {
         let button = UIButton(type: .system)
         let image = #imageLiteral(resourceName: "location-arrow-flat")
         button.setImage(image.withRenderingMode(.alwaysOriginal), for: .normal)
         button.addTarget(self, action: #selector(handleCenterLocation), for: .touchUpInside)
+        return button
+    }()
+    private lazy var removeOverlaysButton: UIButton = {
+        let button = UIButton(type: .system)
+        let image = #imageLiteral(resourceName: "baseline_clear_white_36pt_1x")
+        button.setImage(image.withRenderingMode(.alwaysOriginal), for: .normal)
+        button.backgroundColor = .systemRed
+        button.addTarget(self, action: #selector(handleRemoveOverlays), for: .touchUpInside)
+        button.alpha = 0
         return button
     }()
     // MARK: - Lifecycle
@@ -53,6 +63,9 @@ extension MapController{
         //centerMapButton style
         centerMapButton.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(centerMapButton)
+        //removeOverlaysButton style
+        removeOverlaysButton.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(removeOverlaysButton)
     }
     private func layout(){
         //mapView layout
@@ -75,7 +88,14 @@ extension MapController{
             centerMapButton.heightAnchor.constraint(equalToConstant: 50),
             searchInputView.topAnchor.constraint(equalTo: centerMapButton.bottomAnchor, constant: 16),
             view.trailingAnchor.constraint(equalTo: centerMapButton.trailingAnchor, constant: 16)
-            
+        ])
+        //removeOverlaysButton layout
+        removeOverlaysButton.layer.cornerRadius = 50 / 2
+        NSLayoutConstraint.activate([
+            removeOverlaysButton.widthAnchor.constraint(equalToConstant: 50),
+            removeOverlaysButton.heightAnchor.constraint(equalToConstant: 50),
+            removeOverlaysButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            searchInputView.topAnchor.constraint(equalTo: removeOverlaysButton.bottomAnchor, constant: 266)
         ])
     }
     private func zoomToFit(selectedAnnotation: MKAnnotation?){
@@ -178,10 +198,16 @@ extension MapController: SearchInputViewDelegate{
             if annotation.title == mapItem.name{
                 self.mapView.selectAnnotation(annotation, animated: true)
                 self.zoomToFit(selectedAnnotation: annotation)
+                self.selectedAnnotation = annotation
+                UIView.animate(withDuration: 0.5) {
+                    self.removeOverlaysButton.alpha = 1
+                    self.centerMapButton.alpha = 0
+                }
             }
         }
     }
     func addPolyLine(forDestinationMapItem destinationMapItem: MKMapItem) {
+        searchInputView.disableViewInteraction(directionsEnabled: true)
         generatePolyline(forDestinationMapItem: destinationMapItem)
     }
     func handleSearch(withSearchText searchtext: String) {
@@ -208,8 +234,10 @@ extension MapController: SearchInputViewDelegate{
                 }
             }
         case .FullyExpanded:
-            UIView.animate(withDuration: 0.25) {
-                self.centerMapButton.alpha = 1
+            if !hideButton{
+                UIView.animate(withDuration: 0.25) {
+                    self.centerMapButton.alpha = 1
+                }
             }
         }
     }
@@ -218,6 +246,25 @@ extension MapController: SearchInputViewDelegate{
 extension MapController{
     @objc func handleCenterLocation(_ sender: UIButton){
         centerMapOnUserLocation(shouldLoadAnnotations: false)
+    }
+    @objc func handleRemoveOverlays(_ sender: UIButton){
+        searchInputView.directionsEnabled = false
+        UIView.animate(withDuration: 0.5, delay: 0) {
+            self.removeOverlaysButton.alpha = 0
+            self.centerMapButton.alpha = 1
+        }
+        if mapView.overlays.count > 0{
+            self.mapView.removeOverlay(mapView.overlays[0])
+            self.centerMapOnUserLocation(shouldLoadAnnotations: false)
+        }
+        searchInputView.disableViewInteraction(directionsEnabled: false)
+        guard let selectedAnnotation = self.selectedAnnotation else{ return }
+        mapView.deselectAnnotation(selectedAnnotation, animated: true)
+        let indexPath = IndexPath(row: 0, section: 0)
+        let cell = self.searchInputView.tableView.cellForRow(at: indexPath) as? SearchCell
+        cell?.directionsButtonAlpha(false)
+        cell?.setup()
+        cell?.layout()
     }
 }
 // MARK: - CLLocationManagerDelegate
